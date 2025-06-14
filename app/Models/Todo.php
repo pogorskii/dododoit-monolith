@@ -17,7 +17,12 @@ class Todo extends Model
         'is_completed',
     ];
 
+    public $casts = [
+        'is_completed' => 'boolean',
+    ];
+
     public function user(): BelongsTo
     {
+        return $this->belongsTo(User::class);
     }
 }

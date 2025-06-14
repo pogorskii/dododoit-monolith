@@ -17,7 +17,7 @@ class TodoFactory extends Factory
     public function definition(): array
     {
         return [
-            'title'        => fake()->title,
+            'title'        => fake()->name,
             'description'  => fake()->text,
             'is_completed' => fake()->boolean(),
         ];

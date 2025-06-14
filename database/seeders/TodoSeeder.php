@@ -2,9 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\Todo;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 
 class TodoSeeder extends Seeder
 {
@@ -13,9 +15,18 @@ class TodoSeeder extends Seeder
      */
     public function run(): void
     {
-        $users = User::get();
+        $userIds = User::pluck('id');
 
-        foreach ($users as $user) {
+        $todosToCreate = [];
+
+        foreach ($userIds as $userId) {
+            for ($i = 0; $i < 20; $i++) {
+                $todosToCreate[] = Todo::factory()->raw(['user_id' => $userId]);
+            }
         }
+
+        Collection::make($todosToCreate)->chunk(1000)->each(function ($chunk) {
+            Todo::insert($chunk->toArray());
+        });
     }
 }
