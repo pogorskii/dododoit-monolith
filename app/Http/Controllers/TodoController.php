@@ -6,6 +6,7 @@ use App\Http\Requests\StoreTodoRequest;
 use App\Http\Requests\UpdateTodoRequest;
 use App\Http\Resources\TodoResource;
 use App\Models\Todo;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -47,9 +48,21 @@ class TodoController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreTodoRequest $request)
+    public function store(StoreTodoRequest $request): RedirectResponse
     {
-        return back();
+        try {
+            $todo = Todo::create([
+                'title'       => $request->string('title'),
+                'description' => $request->string('description'),
+                'user_id'     => Auth::id(),
+            ]);
+
+            return redirect()->route('todos.index')->with('success', 'Todo created successfully');
+        } catch (\Throwable $e) {
+            \Log::error($e);
+
+            return back()->withErrors([$e->getMessage()])->withInput();
+        }
     }
 
     /**
@@ -75,33 +88,49 @@ class TodoController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateTodoRequest $request, Todo $todo)
-    {
-        return back();
-    }
-
-    public function toggleStatus(Request $request)
+    public function update(UpdateTodoRequest $request, Todo $todo): RedirectResponse
     {
         try {
-            ray($request->all());
-            $todo = Todo::find($request->integer('todo_id'));
+            $todo->update([
+                'title'       => $request->string('title'),
+                'description' => $request->string('description'),
+            ]);
 
-            if ($todo) {
-                $todo->is_completed = !$todo->is_completed;
-                $todo->save();
-            }
+            return back()->with('success', 'Todo updated successfully');
+        } catch (\Throwable $e) {
+            \Log::error($e);
 
-            return back();
+            return back()->withErrors([$e->getMessage()])->withInput();
+        }
+    }
+
+    public function toggleStatus(Request $request, Todo $todo): RedirectResponse
+    {
+        try {
+            $todo->is_completed = !$todo->is_completed;
+            $todo->save();
+            $status = $todo->is_completed ? 'completed' : 'pending';
+
+            return back()->with('success', "Todo marked as {$status} successfully");
         } catch (\Throwable $th) {
-            //throw $th;
+            \Log::error($th);
+            return back()->withErrors([$th->getMessage()])->withInput();
         }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Todo $todo)
+    public function destroy(Todo $todo): RedirectResponse
     {
-        return back();
+        try {
+            $todo->delete();
+
+            return back()->with('success', 'Todo deleted successfully');
+        } catch (\Throwable $e) {
+            \Log::error($e);
+
+            return back()->withErrors([$e->getMessage()])->withInput();
+        }
     }
 }

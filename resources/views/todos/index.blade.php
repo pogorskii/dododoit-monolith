@@ -13,53 +13,36 @@
             </button>
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
+                    @if (session('success'))
+                        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                            <span class="block sm:inline">{{ session('success') }}</span>
+                        </div>
+                    @endif
+
+                    @if ($errors->any())
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
                     @if ($totalTodos > 0)
-                        <form action="{{route('todos.toggle-status')}}" method="POST">
-                            @csrf
-                            @method('PATCH')
-                            <div class="mb-6">
-                                <h2 class="text-lg font-semibold mb-2">My todos ({{$pendingTodos->count()}})</h2>
-                                @foreach($pendingTodos as $todo)
-                                    <div class="border">
-                                        <div class="flex gap-2">
-                                            <button
-                                                    class="w-full p-3"
-                                                    type="submit"
-                                                    name="todo_id"
-                                                    value="{{$todo->id}}"
-                                            >
-                                                <div>
-                                                    <h3>{{$todo->title}}</h3>
-                                                    <p>{{$todo->description}}</p>
-                                                </div>
-                                            </button>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                            <div>
-                                <h2 class="text-lg font-semibold mb-2">
-                                    Completed todos ({{$completedTodos->count()}})
-                                </h2>
-                                @foreach($completedTodos as $todo)
-                                    <div class="border">
-                                        <div class="flex gap-2">
-                                            <button
-                                                    class="w-full p-3 bg-green-700"
-                                                    type="submit"
-                                                    name="todo_id"
-                                                    value="{{$todo->id}}"
-                                            >
-                                                <div>
-                                                    <h3>{{$todo->title}}</h3>
-                                                    <p>{{$todo->description}}</p>
-                                                </div>
-                                            </button>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </form>
+                        <div class="mb-6">
+                            <h2 class="text-lg font-semibold mb-2">My todos ({{$pendingTodos->count()}})</h2>
+                            @foreach($pendingTodos as $todo)
+                                @include('todos._partials.todo-card', ['todo' => $todo])
+                            @endforeach
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-semibold mb-2">
+                                Completed todos ({{$completedTodos->count()}})
+                            </h2>
+                            @foreach($completedTodos as $todo)
+                                @include('todos._partials.todo-card', ['todo' => $todo])
+                            @endforeach
+                        </div>
                     @else
                         <div class="flex flex-col justify-center items-center grow">
                             <span class="mb-2">No todos yet.</span>
