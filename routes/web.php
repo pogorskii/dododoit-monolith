@@ -13,6 +13,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    Route::patch('todos/toggle-status', [TodoController::class, 'toggleStatus'])->name('todos.toggle-status');
     Route::resource('todos', TodoController::class);
 });
 

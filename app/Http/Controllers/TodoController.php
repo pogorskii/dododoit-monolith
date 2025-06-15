@@ -6,6 +6,7 @@ use App\Http\Requests\StoreTodoRequest;
 use App\Http\Requests\UpdateTodoRequest;
 use App\Http\Resources\TodoResource;
 use App\Models\Todo;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class TodoController extends Controller
@@ -15,9 +16,24 @@ class TodoController extends Controller
      */
     public function index()
     {
-        $todos = TodoResource::collection(Auth::user()->todos()->get());
+        $todos = Auth::user()->todos()->get();
 
-        return view('todos.index', ['todos' => $todos]);
+        $completedTodos = [];
+        $pendingTodos   = [];
+
+        foreach ($todos as $todo) {
+            if ($todo->is_completed) {
+                $completedTodos[] = $todo;
+            } else {
+                $pendingTodos[] = $todo;
+            }
+        }
+
+        return view('todos.index', [
+            'completedTodos' => TodoResource::collection($completedTodos),
+            'pendingTodos'   => TodoResource::collection($pendingTodos),
+            'totalTodos'     => $todos->count(),
+        ]);
     }
 
     /**
@@ -33,7 +49,7 @@ class TodoController extends Controller
      */
     public function store(StoreTodoRequest $request)
     {
-        //
+        return back();
     }
 
     /**
@@ -41,7 +57,9 @@ class TodoController extends Controller
      */
     public function show(Todo $todo)
     {
-        //
+        return view('todos.form', [
+            'todo' => $todo,
+        ]);
     }
 
     /**
@@ -49,7 +67,9 @@ class TodoController extends Controller
      */
     public function edit(Todo $todo)
     {
-        //
+        return view('todos.form', [
+            'todo' => $todo,
+        ]);
     }
 
     /**
@@ -57,7 +77,24 @@ class TodoController extends Controller
      */
     public function update(UpdateTodoRequest $request, Todo $todo)
     {
-        //
+        return back();
+    }
+
+    public function toggleStatus(Request $request)
+    {
+        try {
+            ray($request->all());
+            $todo = Todo::find($request->integer('todo_id'));
+
+            if ($todo) {
+                $todo->is_completed = !$todo->is_completed;
+                $todo->save();
+            }
+
+            return back();
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
     }
 
     /**
@@ -65,6 +102,6 @@ class TodoController extends Controller
      */
     public function destroy(Todo $todo)
     {
-        //
+        return back();
     }
 }
